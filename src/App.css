@@ -66,6 +66,26 @@ h1 {
 	padding: 18px;
 }
 
+.tabs {
+	max-width: 1380px;
+	margin: 0 auto 18px;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.tabs button {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.tabs button.active {
+	background: rgba(14, 165, 233, 0.18);
+	border-color: rgba(56, 189, 248, 0.72);
+	color: #f8fafc;
+}
+
 label {
 	display: grid;
 	gap: 8px;
@@ -74,6 +94,7 @@ label {
 }
 
 input,
+select,
 textarea {
 	width: 100%;
 	box-sizing: border-box;
@@ -82,6 +103,11 @@ textarea {
 	background: #111827;
 	color: #f8fafc;
 	padding: 10px 12px;
+}
+
+.inline-select {
+	min-width: 280px;
+	font-size: 13px;
 }
 
 button {
@@ -246,7 +272,7 @@ th {
 
 .detail-grid {
 	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 	gap: 14px;
 	margin: 18px 0;
 }
@@ -261,6 +287,58 @@ details {
 
 .info-card h4 {
 	margin-bottom: 8px;
+}
+
+.snapshot-card {
+	grid-column: 1 / -1;
+}
+
+.snapshot-grid {
+	margin: 0 0 14px;
+}
+
+.field-list {
+	display: grid;
+	gap: 8px;
+	margin: 0;
+}
+
+.field-list div {
+	display: grid;
+	grid-template-columns: 120px 1fr;
+	gap: 10px;
+}
+
+.field-list.compact div {
+	grid-template-columns: 140px 1fr;
+}
+
+.field-list dt {
+	color: #93a4ba;
+	font-size: 12px;
+	font-weight: 800;
+	text-transform: uppercase;
+}
+
+.field-list dd {
+	margin: 0;
+}
+
+.label-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.snapshot-component-body {
+	display: grid;
+	gap: 12px;
+	margin-top: 12px;
+}
+
+.snapshot-parts {
+	display: grid;
+	gap: 6px;
 }
 
 pre,
@@ -287,6 +365,41 @@ pre {
 	gap: 10px;
 }
 
+.tower1-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+	gap: 14px;
+	padding: 18px;
+}
+
+.tower1-card {
+	background: rgba(15, 23, 42, 0.78);
+	border: 1px solid rgba(148, 163, 184, 0.14);
+	border-radius: 12px;
+	padding: 14px;
+}
+
+.target-link-list {
+	display: grid;
+	gap: 8px;
+}
+
+.check-row {
+	display: flex;
+	grid-template-columns: none;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 10px;
+	border-radius: 10px;
+	background: rgba(30, 41, 59, 0.5);
+	font-weight: 500;
+}
+
+.check-row input {
+	width: auto;
+	margin-top: 2px;
+}
+
 summary {
 	display: flex;
 	gap: 10px;
@@ -307,6 +420,13 @@ summary {
 	padding: 8px 10px;
 	border-radius: 9px;
 	background: rgba(30, 41, 59, 0.55);
+}
+
+.part.header {
+	color: #93a4ba;
+	font-size: 12px;
+	font-weight: 800;
+	text-transform: uppercase;
 }
 
 .empty {

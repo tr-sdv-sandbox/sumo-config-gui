@@ -1,4 +1,4 @@
-use crate::model::{ComponentConfig, Deployment, PartConfig, VehicleConfig};
+use crate::model::{ComponentConfig, Deployment, PartConfig, TargetTypeConfig, VehicleConfig};
 use crate::schema::{path_key, sanitize_segment, ConfigResult, SchemaAdapter};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -93,6 +93,7 @@ impl SchemaAdapter for CurrentVehicleJsonAdapter {
         new_id: &str,
         channel: Option<&str>,
         profile: Option<&str>,
+        target_type: Option<&str>,
     ) -> ConfigResult<VehicleConfig> {
         let mut clone = source.clone();
         clone.id = new_id.to_string();
@@ -101,6 +102,9 @@ impl SchemaAdapter for CurrentVehicleJsonAdapter {
             .map(ToOwned::to_owned)
             .unwrap_or_else(|| default_clone_channel(source, new_id));
         clone.deployment.profile = profile.unwrap_or(&source.deployment.profile).to_string();
+        if let Some(target_type) = target_type {
+            clone.target_type.name = target_type.to_string();
+        }
         let target = clone_path_for_channel(&source.source_path, &clone.deployment.channel, new_id);
         clone.source_path = target.to_string_lossy().to_string();
         clone.key = path_key(&target);
@@ -142,10 +146,25 @@ fn to_model(file: CurrentVehicleFile, path: &Path) -> VehicleConfig {
     VehicleConfig {
         key: path_key(path),
         id,
-        kind: file.vehicle.kind.unwrap_or_else(|| "vehicle".into()),
+        kind: file
+            .vehicle
+            .kind
+            .clone()
+            .unwrap_or_else(|| "vehicle".into()),
+        target_type: TargetTypeConfig {
+            name: file
+                .vehicle
+                .tag
+                .clone()
+                .or_else(|| file.vehicle.kind.clone())
+                .unwrap_or_else(|| "legacy-vehicle-json".into()),
+            kind: file.vehicle.kind.unwrap_or_else(|| "vehicle".into()),
+            description: Some("Inferred from current vehicle.json schema".into()),
+        },
         deployment: Deployment { channel, profile },
         target: file.target,
         labels: file.labels,
+        config_snapshot: None,
         components: file
             .components
             .into_iter()
@@ -160,6 +179,7 @@ fn to_model(file: CurrentVehicleFile, path: &Path) -> VehicleConfig {
 fn component_to_model(component: CurrentComponent) -> ComponentConfig {
     ComponentConfig {
         path: component.path,
+        parent_path: None,
         kind: component.kind,
         version: component.version,
         update_mode: component.update_mode,
@@ -180,8 +200,12 @@ fn from_model(config: &VehicleConfig) -> CurrentVehicleFile {
     CurrentVehicleFile {
         comment: Some("Managed by SUMO Config GUI".into()),
         vehicle: CurrentVehicle {
-            id: Some(config.id.clone()),
-            tag: Some(config.id.clone()),
+            id: non_empty_string(&config.id),
+            tag: Some(if config.target_type.name.is_empty() {
+                config.id.clone()
+            } else {
+                config.target_type.name.clone()
+            }),
             kind: Some(config.kind.clone()),
             version: None,
         },
@@ -209,6 +233,15 @@ fn from_model(config: &VehicleConfig) -> CurrentVehicleFile {
             })
             .collect(),
         disabled: config.disabled,
+    }
+}
+
+fn non_empty_string(value: &str) -> Option<String> {
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        None
+    } else {
+        Some(trimmed.to_string())
     }
 }
 

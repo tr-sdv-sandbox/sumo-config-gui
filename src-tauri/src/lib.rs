@@ -8,6 +8,8 @@ pub mod tower;
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            controller::launch_config,
+            controller::list_tower1_configs,
             controller::list_vehicles,
             controller::get_vehicle,
             controller::save_vehicle,

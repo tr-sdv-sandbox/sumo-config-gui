@@ -12,7 +12,7 @@ pub enum ConfigError {
     Yaml(#[from] serde_yaml::Error),
     #[error("unsupported config schema for {0}")]
     Unsupported(String),
-    #[error("vehicle config not found: {0}")]
+    #[error("target config not found: {0}")]
     NotFound(String),
     #[error("validation failed: {0}")]
     Validation(String),
@@ -31,6 +31,7 @@ pub trait SchemaAdapter: Send + Sync {
         new_id: &str,
         channel: Option<&str>,
         profile: Option<&str>,
+        target_type: Option<&str>,
     ) -> ConfigResult<VehicleConfig>;
     fn disable(&self, source: &VehicleConfig) -> ConfigResult<VehicleConfig>;
 }
@@ -104,8 +105,8 @@ pub fn validation_errors(config: &VehicleConfig) -> (Vec<String>, Vec<String>) {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
 
-    if config.id.trim().is_empty() {
-        errors.push("vehicle id is required".into());
+    if config.target_type.name.trim().is_empty() {
+        errors.push("target_type.name is required".into());
     }
     if config.deployment.channel.trim().is_empty() {
         errors.push("deployment.channel is required".into());
@@ -114,7 +115,7 @@ pub fn validation_errors(config: &VehicleConfig) -> (Vec<String>, Vec<String>) {
         errors.push("deployment.profile is required".into());
     }
     if config.components.is_empty() {
-        warnings.push("vehicle has no components".into());
+        warnings.push("target config has no components".into());
     }
 
     let mut component_paths = BTreeSet::new();

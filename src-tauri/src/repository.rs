@@ -83,6 +83,7 @@ impl VehicleRepository {
             &options.new_id,
             options.channel.as_deref(),
             options.profile.as_deref(),
+            options.target_type.as_deref(),
         )?;
         let validation = validate(&cloned);
         Ok(CommandResponse {
@@ -214,6 +215,11 @@ components:
     kind: high-performance-ecu
     parts:
       kernel: hpc1/kernel
+    workloads:
+      vm1:
+        kind: vm
+        parts:
+          rootfs: hpc1/vm1/rootfs.img
 "#,
         )
         .unwrap();
@@ -222,7 +228,8 @@ components:
         let list = repo.list().unwrap();
         assert_eq!(list.len(), 2);
         assert!(list.iter().any(|c| c.schema == "current-vehicle-json"));
-        assert!(list.iter().any(|c| c.schema == "profile-yaml"));
+        let yaml = list.iter().find(|c| c.schema == "profile-yaml").unwrap();
+        assert!(yaml.components.iter().any(|c| c.path == "hpc1/vm1"));
     }
 
     #[test]
@@ -249,6 +256,7 @@ components:
                     new_id: "truck-002".into(),
                     channel: Some("bleeding/truck-002".into()),
                     profile: Some("test".into()),
+                    target_type: Some("managed-cvc-rig".into()),
                 },
             )
             .unwrap()

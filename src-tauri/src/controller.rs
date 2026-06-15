@@ -1,29 +1,71 @@
 use crate::model::{
-    CloneOptions, CommandResponse, TowerLinkage, ValidationResult, VehicleConfig, VehicleSummary,
+    CloneOptions, CommandResponse, LaunchConfig, Tower1Config, TowerLinkage, ValidationResult,
+    VehicleConfig, VehicleSummary,
 };
 use crate::repository::{resolve_root, validate, VehicleRepository};
 use crate::tower;
 
 #[tauri::command]
+pub fn launch_config() -> LaunchConfig {
+    LaunchConfig {
+        config_root: std::env::var("SUMO_CONFIG_GUI_ROOT").ok(),
+        tower1_url: std::env::var("SUMO_CONFIG_GUI_TOWER1_URL")
+            .unwrap_or_else(|_| "http://localhost:8080".into()),
+        tower2_url: std::env::var("SUMO_CONFIG_GUI_TOWER2_URL")
+            .unwrap_or_else(|_| "http://localhost:8081".into()),
+    }
+}
+
+#[tauri::command]
+pub async fn list_tower1_configs(tower1_url: Option<String>) -> Result<Vec<Tower1Config>, String> {
+    tower::list_tower1_configs(tower1_url).await
+}
+
+#[tauri::command]
 pub async fn list_vehicles(
     root: Option<String>,
-    tower1_url: Option<String>,
     tower2_url: Option<String>,
 ) -> Result<Vec<VehicleSummary>, String> {
-    let repo = VehicleRepository::new(resolve_root(root));
-    let configs = repo.list().map_err(|e| e.to_string())?;
+    let has_local_root = root
+        .as_deref()
+        .is_some_and(|value| !value.trim().is_empty());
+    let mut configs = match tower::list_tower_targets(tower2_url.clone()).await {
+        Ok(configs) => configs,
+        Err(err) if has_local_root => {
+            eprintln!("Tower 2 target release listing failed; using local test files only: {err}");
+            Vec::new()
+        }
+        Err(err) => return Err(err),
+    };
+
+    if has_local_root {
+        let repo = VehicleRepository::new(resolve_root(root));
+        configs.extend(repo.list().map_err(|e| e.to_string())?);
+    }
+
     let mut summaries = Vec::with_capacity(configs.len());
     for config in configs {
         let mut summary = VehicleSummary::from_config(&config);
-        summary.linkage =
-            Some(tower::check_tower_linkage(&config, tower1_url.clone(), tower2_url.clone()).await);
+        summary.linkage = Some(tower::check_tower_linkage(&config, tower2_url.clone()).await);
         summaries.push(summary);
     }
     Ok(summaries)
 }
 
 #[tauri::command]
-pub async fn get_vehicle(root: Option<String>, key: String) -> Result<VehicleConfig, String> {
+pub async fn get_vehicle(
+    root: Option<String>,
+    tower2_url: Option<String>,
+    key: String,
+) -> Result<VehicleConfig, String> {
+    if key.starts_with("tower2:") {
+        return tower::list_tower_targets(tower2_url)
+            .await?
+            .into_iter()
+            .find(|config| config.key == key)
+            .ok_or_else(|| format!("target release not found: {key}"));
+    }
+
     let repo = VehicleRepository::new(resolve_root(root));
     repo.get(&key).map_err(|e| e.to_string())
 }
@@ -65,10 +107,9 @@ pub async fn validate_vehicle(vehicle: VehicleConfig) -> Result<ValidationResult
 #[tauri::command]
 pub async fn check_tower_linkage(
     vehicle: VehicleConfig,
-    tower1_url: Option<String>,
     tower2_url: Option<String>,
 ) -> Result<TowerLinkage, String> {
-    Ok(tower::check_tower_linkage(&vehicle, tower1_url, tower2_url).await)
+    Ok(tower::check_tower_linkage(&vehicle, tower2_url).await)
 }
 
 #[cfg(test)]
@@ -92,13 +133,13 @@ mod tests {
         )
         .unwrap();
 
-        let summaries = list_vehicles(Some(temp.path().to_string_lossy().to_string()), None, None)
+        let summaries = list_vehicles(Some(temp.path().to_string_lossy().to_string()), None)
             .await
             .unwrap();
         assert_eq!(summaries.len(), 1);
         assert_eq!(summaries[0].id, "truck-001");
         assert_eq!(
-            summaries[0].linkage.as_ref().unwrap().tower1_device.state,
+            summaries[0].linkage.as_ref().unwrap().tower2_channel.state,
             "skipped"
         );
     }

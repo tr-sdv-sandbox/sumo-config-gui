@@ -9,6 +9,15 @@ pub struct Deployment {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct TargetTypeConfig {
+    pub name: String,
+    #[serde(default)]
+    pub kind: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct PartConfig {
     pub id: String,
     #[serde(default)]
@@ -20,6 +29,8 @@ pub struct PartConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct ComponentConfig {
     pub path: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parent_path: Option<String>,
     #[serde(default)]
     pub kind: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -36,15 +47,20 @@ pub struct ComponentConfig {
 pub struct VehicleConfig {
     /// Stable UI/repository key. The first version uses the source path.
     pub key: String,
+    #[serde(default)]
     pub id: String,
     #[serde(default)]
     pub kind: String,
+    #[serde(default)]
+    pub target_type: TargetTypeConfig,
     #[serde(default)]
     pub deployment: Deployment,
     #[serde(default)]
     pub target: BTreeMap<String, Value>,
     #[serde(default)]
     pub labels: BTreeMap<String, Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub config_snapshot: Option<Value>,
     #[serde(default)]
     pub components: Vec<ComponentConfig>,
     #[serde(default)]
@@ -122,8 +138,21 @@ impl LinkStatus {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TowerLinkage {
-    pub tower1_device: LinkStatus,
     pub tower2_channel: LinkStatus,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct Tower1Config {
+    pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
+    pub status: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cert_serial: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cert_not_after: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cert_fingerprint: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -131,6 +160,7 @@ pub struct VehicleSummary {
     pub key: String,
     pub id: String,
     pub kind: String,
+    pub target_type: String,
     pub channel: String,
     pub profile: String,
     pub schema: String,
@@ -149,6 +179,7 @@ impl VehicleSummary {
             key: config.key.clone(),
             id: config.id.clone(),
             kind: config.kind.clone(),
+            target_type: config.target_type.name.clone(),
             channel: config.deployment.channel.clone(),
             profile: config.deployment.profile.clone(),
             schema: config.schema.clone(),
@@ -168,10 +199,20 @@ pub struct CloneOptions {
     pub channel: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub profile: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub target_type: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CommandResponse<T> {
     pub value: T,
     pub validation: ValidationResult,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LaunchConfig {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub config_root: Option<String>,
+    pub tower1_url: String,
+    pub tower2_url: String,
 }

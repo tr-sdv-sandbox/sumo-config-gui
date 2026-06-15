@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SUMO Config GUI",
+  "version": "0.1.0",
+  "identifier": "com.sumo.config-gui",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1422",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "SUMO Config GUI",
+        "width": 1280,
+        "height": 820
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}

@@ -1,0 +1,24 @@
+# SUMO Config GUI — Mise Tasks
+# Run from this repository root, e.g. `mise run run`, `mise run build`, `mise run validate`.
+
+[tasks.run]
+description = "Run the SUMO Config GUI desktop app"
+run = './scripts/run.sh "$@"'
+
+[tasks.build]
+description = "Build the SUMO Config GUI desktop bundle"
+run = './scripts/build.sh "$@"'
+
+[tasks.validate]
+description = "Validate the SUMO Config GUI frontend, backend, and scripts"
+run = '''
+if [ ! -d node_modules ]; then
+  npm install
+fi
+bash -n scripts/run.sh scripts/build.sh
+npm run build
+cd src-tauri
+cargo fmt --check
+cargo test
+cargo clippy --all-targets -- -D warnings
+'''

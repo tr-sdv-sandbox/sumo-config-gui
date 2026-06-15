@@ -1,0 +1,41 @@
+{
+  "_comment": "Example v1/current schema for SUMO Config GUI smoke testing. This mirrors the existing channel vehicle.json shape.",
+  "vehicle": {
+    "id": "gui-v1-truck-001",
+    "tag": "managed-cvc",
+    "kind": "truck",
+    "version": "1.0.0"
+  },
+  "deployment": {
+    "channel": "bleeding",
+    "profile": "default"
+  },
+  "labels": {
+    "usage": "gui-smoke-test",
+    "site": "local"
+  },
+  "components": [
+    {
+      "path": "vm1",
+      "kind": "bank",
+      "version": "1.0.0",
+      "update_mode": "banked",
+      "parts": [
+        { "id": "kernel", "kind": "file", "source": "vm1/kernel" },
+        { "id": "rootfs.img", "kind": "file", "source": "vm1/rootfs.img" },
+        { "id": "vm-config.yaml", "kind": "file", "source": "vm1/vm-config.yaml" },
+        { "id": "qvm.conf", "kind": "file", "source": "vm1/qvm.conf" }
+      ]
+    },
+    {
+      "path": "rt",
+      "kind": "realtime-engine-ecu",
+      "version": "1.0.0",
+      "update_mode": "singleshot",
+      "parts": [
+        { "id": "rt-firmware.s19", "kind": "file", "source": "rt/rt-firmware.s19" }
+      ]
+    }
+  ],
+  "disabled": false
+}

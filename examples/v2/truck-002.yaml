@@ -1,0 +1,71 @@
+vehicle:
+  kind: truck
+
+target_type:
+  name: s32g3-qnx71-hpc
+  kind: truck
+  description: S32G3 truck with banked HPCs and one realtime ECU
+
+target:
+  hardware: s32g3
+  host_os: qnx
+  host_os_version: "7.1"
+  arch: arm64
+
+labels:
+  usage: gui-smoke-test
+  site: local
+
+deployment:
+  channel: bleeding
+  profile: integration-test
+
+components:
+  hpc1:
+    kind: high-performance-ecu
+    update_mode: banked
+    target:
+      os: qnx
+      os_version: "7.1"
+      arch: arm64
+    parts:
+      host_kernel: hpc1/host/boot.ifs
+      host_rootfs: hpc1/host/rootfs.img
+      vm_service_config: hpc1/host/vm-service.yaml
+      sumo_config: hpc1/host/sumo-config
+    workloads:
+      vm1:
+        kind: vm
+        update_mode: banked
+        target:
+          os: linux
+          arch: arm64
+        parts:
+          kernel: hpc1/vm1/Image
+          rootfs: hpc1/vm1/rootfs.img
+          vm_config: hpc1/vm1/vm-config.yaml
+          qvm_config: hpc1/vm1/qvm.conf
+
+      vm2:
+        kind: vm
+        update_mode: banked
+        target:
+          os: qnx
+          os_version: "7.1"
+          arch: arm64
+        parts:
+          boot_ifs: hpc1/vm2/boot.ifs
+          rootfs: hpc1/vm2/rootfs.img
+          vm_config: hpc1/vm2/vm-config.yaml
+          qvm_config: hpc1/vm2/qvm.conf
+
+  engine_rt:
+    kind: realtime-engine-ecu
+    update_mode: singleshot
+    target:
+      core: m7
+      format: srec
+    parts:
+      firmware: engine_rt/engine-firmware.s19
+
+disabled: false

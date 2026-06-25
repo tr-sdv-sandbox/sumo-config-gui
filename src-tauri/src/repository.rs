@@ -116,7 +116,7 @@ pub fn default_root() -> PathBuf {
 
     let current = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     for ancestor in current.ancestors() {
-        let candidate = ancestor.join("examples/managed-cvc-tower");
+        let candidate = ancestor.join("examples/t2-seed-bleeding");
         if candidate.exists() {
             return candidate;
         }

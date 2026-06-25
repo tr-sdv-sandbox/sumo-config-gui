@@ -104,7 +104,7 @@ Use Tower 2 mode for normal target release browsing. Use another config root onl
 
 Besides this repository's bundled `examples/`, the workspace contains these useful example locations:
 
-- `../../examples/managed-cvc-tower/channels/*/vehicle.json` — real v1/current `vehicle.json` examples used by `sumo-provision` tower flows.
+- `../../examples/t2-seed-bleeding/channels/*/vehicle.json` — real current `vehicle.json` examples used by the `t2-seed-*` tower seeders.
 - `../../examples/managed-cvc` — managed CVC rig configs and policy examples.
 - `../../examples/managed-qemu` and `../../examples/campaign` — QEMU/campaign examples.
 - `../SOVDd/crates/sovd-client/examples` — SOVD client flash config YAML examples.

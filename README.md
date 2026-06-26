@@ -110,6 +110,6 @@ Besides this repository's bundled `examples/`, the workspace contains these usef
 - `../SOVDd/crates/sovd-client/examples` — SOVD client flash config YAML examples.
 - `../sumo-provision/crates/software-tower/examples` — Tower 2 Rust example/benchmark code.
 - `../sumo-machine-manager/example` — machine-manager factory and VM config examples.
-- `../supernova-host-qnx/examples` and `../supernova-machine-manager/examples` — QNX/supernova example configs and scripts.
+- `../supernova-machine-manager/examples` — QNX/supernova example configs and scripts.
 
 For GUI schema testing, start with this repository's `./examples` directory. For realistic SUMO data, use Tower 2 mode rather than pointing the GUI at private population files.

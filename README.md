@@ -113,3 +113,7 @@ Besides this repository's bundled `examples/`, the workspace contains these usef
 - `../supernova-machine-manager/examples` — QNX/supernova example configs and scripts.
 
 For GUI schema testing, start with this repository's `./examples` directory. For realistic SUMO data, use Tower 2 mode rather than pointing the GUI at private population files.
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).
